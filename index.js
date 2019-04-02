@@ -10,7 +10,7 @@ app.get('/', (req, res) => {
         if (err) {
             console.log('cmd执行错误', err);
         }
-        if (stdout) {
+        if (!stdout) {
             console.log('端口号读取失败', stdout);
         }
         const prot = stdout;
