@@ -1,0 +1,23 @@
+{
+  "name": "listen_jenkins_request",
+  "version": "1.0.0",
+  "description": "运行在wxdt 容器内部，监听来自外部的请求，返回对应登录二维码",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hbxks18/Listen_Jenkins_request.git"
+  },
+  "author": "hbx",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hbxks18/Listen_Jenkins_request/issues"
+  },
+  "homepage": "https://github.com/hbxks18/Listen_Jenkins_request#readme",
+  "dependencies": {
+    "express": "^4.16.4",
+    "request": "^2.88.0"
+  }
+}
