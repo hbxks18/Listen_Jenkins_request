@@ -4,6 +4,7 @@
   "description": "运行在wxdt 容器内部，监听来自外部的请求，返回对应登录二维码",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
