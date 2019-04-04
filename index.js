@@ -20,7 +20,7 @@ const execPr = (cmdStr) => new Promise((resolve, reject) => {
 });
 
 const setStatus = async (status) => {
-    const cmd = 'echo "' + status + '" >> .status';
+    const cmd = 'echo "' + status + '" > .status';
     try {
         await execPr(cmd);
     } catch (error) {
@@ -53,7 +53,7 @@ const getLoginImage = async (res) => {
     .pipe(res);
 }
 
-const getBuyImage = async (res) => {
+const getBuyImage = (res) => {
     fs.createReadStream('./image/buy.jpg').pipe(res);
 }
 
@@ -68,7 +68,7 @@ setStatus(IS_FREE);
 
 app.get('/login', async (req, res) => {
     const status = await getStatus();
-    switch (status) {
+    switch (+status) {
         case IS_BUY:
             getBuyImage(res);
             break;
