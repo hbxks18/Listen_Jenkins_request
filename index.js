@@ -1,19 +1,21 @@
 const express = require('express');
 const fs = require('fs');
 const request = require('request');
+const bodyParser = require('body-parser')
 const cookieParser = require("cookie-parser");
 const exec = require('child_process').exec;
 const app = express();
 
 
 app.use(cookieParser());
-
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 
 
 
 const IS_BUSY = 1; // 有项目正在使用该容器
 const IS_FREE = 0; // 该项目无人使用中
-const TIME_OUT = 360; // 超时时间，登录未使用，默认为5分钟后释放
+const TIME_OUT = 300; // 超时时间，登录未使用，默认为5分钟后释放
 let timer = null;
 let user = null;
 let status = IS_FREE;
@@ -78,6 +80,16 @@ app.get('/free', async (req, res) => {
     status = IS_FREE;
     user = null;
     res.sendStatus(200);
+})
+
+app.get('/upload', async (req, res) => {
+    const { version } = req.body;
+    console.log(version)
+    console.log(req.body, req.query)
+    res.json({
+        code: -1,
+        message: '错误'
+    });
 })
 
 app.listen(8000, () => console.log('app listening on port 8000!'))
