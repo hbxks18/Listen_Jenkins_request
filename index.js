@@ -82,7 +82,7 @@ app.get('/free', async (req, res) => {
     res.sendStatus(200);
 })
 
-app.get('/upload', async (req, res) => {
+app.post('/upload', async (req, res) => {
     const { version } = req.body;
     console.log(version)
     console.log(req.body, req.query)
