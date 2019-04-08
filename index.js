@@ -5,9 +5,12 @@ const request = require('request');
 const exec = require('child_process').exec;
 
 
-const IS_BUY = 1; // 有项目正在使用该容器
+const IS_BUSY = 1; // 有项目正在使用该容器
 const IS_FREE = 0; // 该项目无人使用中
+const TIME_OUT = 360; // 超时时间，登录未使用，默认为5分钟后释放
 let timer = null;
+let user = null;
+let status = 0;
 const execPr = (cmdStr) => new Promise((resolve, reject) => {
     exec(cmdStr, (err, stdout) => {
         if (err) {
@@ -18,26 +21,6 @@ const execPr = (cmdStr) => new Promise((resolve, reject) => {
         }
     })
 });
-
-const setStatus = async (status) => {
-    const cmd = 'echo "' + status + '" > .status';
-    try {
-        await execPr(cmd);
-    } catch (error) {
-
-    }
-}
-
-const getStatus = async () => {
-    const cmd = 'cat ".status"';
-    let status = '';
-    try {
-        status = await execPr(cmd);
-    } catch (error) {
-
-    }
-    return status;
-}
 
 const getLoginImage = async (res) => {
     const cmd = 'cat "/root/.config/wechat_web_devtools/Default/.ide"';
@@ -53,29 +36,26 @@ const getLoginImage = async (res) => {
     .pipe(res);
 }
 
-const getBuyImage = (res) => {
-    fs.createReadStream('./image/buy.jpg').pipe(res);
+const getBusyImage = (res) => {
+    fs.createReadStream('./image/busy.jpg').pipe(res);
 }
 
-const timeOut = (s) => {
+const timeout = (s) => {
     timer = setTimeout(() => {
-        setStatus(IS_FREE)
+        status = IS_FREE;
     }, 1000 * s);
 }
 
-
-setStatus(IS_FREE);
-
 app.get('/login', async (req, res) => {
-    const status = await getStatus();
-    switch (+status) {
-        case IS_BUY:
-            getBuyImage(res);
+    console.log('cookie', req.headers.cookie)
+    switch (status) {
+        case IS_BUSY:
+            getBusyImage(res);
             break;
         case IS_FREE:
-            setStatus(IS_BUY);
+            status = IS_BUSY;
+            timeout(TIME_OUT);
             getLoginImage(res);
-            timeOut(360);
         break;
         default:break;
     }
@@ -83,7 +63,8 @@ app.get('/login', async (req, res) => {
 
 app.get('/free', async (req, res) => {
     clearTimeout(timer);
-    setStatus(IS_FREE);
+    status = IS_FREE;
     res.sendStatus(200);
 })
+
 app.listen(8000, () => console.log('app listening on port 8000!'))
