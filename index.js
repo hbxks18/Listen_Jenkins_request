@@ -49,17 +49,23 @@ const getBusyImage = (res) => {
 const timeout = (s) => {
     timer = setTimeout(() => {
         status = IS_FREE;
+        user = null;
     }, 1000 * s);
 }
 
 app.get('/login', async (req, res) => {
-    console.log('cookie', req.cookies)
+    const curUser = req.cookies.STOKEN;
+    if (user && curUser === user) {
+        getLoginImage(res);
+        return;
+    }
     switch (status) {
         case IS_BUSY:
             getBusyImage(res);
             break;
         case IS_FREE:
             status = IS_BUSY;
+            user = curUser;
             timeout(TIME_OUT);
             getLoginImage(res);
         break;
@@ -70,6 +76,7 @@ app.get('/login', async (req, res) => {
 app.get('/free', async (req, res) => {
     clearTimeout(timer);
     status = IS_FREE;
+    user = null;
     res.sendStatus(200);
 })
 
