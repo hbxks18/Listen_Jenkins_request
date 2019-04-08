@@ -10,7 +10,7 @@ const IS_FREE = 0; // 该项目无人使用中
 const TIME_OUT = 360; // 超时时间，登录未使用，默认为5分钟后释放
 let timer = null;
 let user = null;
-let status = 0;
+let status = IS_FREE;
 const execPr = (cmdStr) => new Promise((resolve, reject) => {
     exec(cmdStr, (err, stdout) => {
         if (err) {
