@@ -1,8 +1,14 @@
 const express = require('express');
 const fs = require('fs');
-const app = express();
 const request = require('request');
+const cookieParser = require("cookie-parser");
 const exec = require('child_process').exec;
+const app = express();
+
+
+app.use(cookieParser());
+
+
 
 
 const IS_BUSY = 1; // 有项目正在使用该容器
@@ -25,7 +31,6 @@ const execPr = (cmdStr) => new Promise((resolve, reject) => {
 const getLoginImage = async (res) => {
     const cmd = 'cat "/root/.config/wechat_web_devtools/Default/.ide"';
     const port = await execPr(cmd);
-    console.log('port', port)
     const options = {
         method: 'GET',
         uri: 'http://127.0.0.1:'+ port +'/login?format=image',
@@ -48,8 +53,7 @@ const timeout = (s) => {
 }
 
 app.get('/login', async (req, res) => {
-    console.log('cookie', req.headers.cookie)
-    console.log(status)
+    console.log('cookie', req.cookies)
     switch (status) {
         case IS_BUSY:
             getBusyImage(res);
@@ -57,7 +61,6 @@ app.get('/login', async (req, res) => {
         case IS_FREE:
             status = IS_BUSY;
             timeout(TIME_OUT);
-            console.log('IS_FREE')
             getLoginImage(res);
         break;
         default:break;
