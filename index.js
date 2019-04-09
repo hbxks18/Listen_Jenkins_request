@@ -89,7 +89,7 @@ app.post('/upload', async (req, res) => {
     const port = await execPr(cmd);
     const options = {
         method: 'GET',
-        uri: 'http://127.0.0.1:'+ port +'/upload?projectpath=%2FUsers%2Fusername%2Fdemo&version=v1.0.0&desc=test',
+        uri: 'http://127.0.0.1:'+ port +'/upload',
         qa: {
             projectpath: `/projects/${job_name}/output`,
             version,
