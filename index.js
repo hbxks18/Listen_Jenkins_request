@@ -36,7 +36,7 @@ const getLoginImage = async (res) => {
     const port = await execPr(cmd);
     const options = {
         method: 'GET',
-        uri: 'http://127.0.0.1:'+ port +'/login?format=image',
+        uri: `http://127.0.0.1:${port}/login?format=image`,
     };
     request(options)
     .on('error', (err) => {
@@ -89,12 +89,12 @@ app.post('/upload', async (req, res) => {
     const port = await execPr(cmd);
     const options = {
         method: 'GET',
-        uri: 'http://127.0.0.1:'+ port +'/upload',
-        qa: {
-            projectpath: `/projects/${job_name}/output`,
-            version,
-            desc,
-        }
+        uri: `http://127.0.0.1:${port}/upload?projectpath=${`/projects/${job_name}/output`}&version=${version}&desc=${desc}`,
+        // qa: {
+        //     projectpath: `/projects/${job_name}/output`,
+        //     version,
+        //     desc,
+        // }
     }
     try {
         const result = await rp(options);
