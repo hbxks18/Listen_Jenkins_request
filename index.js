@@ -4,6 +4,7 @@ const request = require('request');
 const bodyParser = require('body-parser')
 const cookieParser = require("cookie-parser");
 const exec = require('child_process').exec;
+const rp = require('request-promise');
 const app = express();
 
 
@@ -83,13 +84,25 @@ app.get('/free', async (req, res) => {
 })
 
 app.post('/upload', async (req, res) => {
-    const { version } = req.body;
-    console.log(req)
-    console.log(req.body, req.query)
+    const { version, job_name, desc } = req.body;
+    const cmd = 'cat "/root/.config/wechat_web_devtools/Default/.ide"';
+    const port = await execPr(cmd);
+    const options = {
+        method: 'GET',
+        uri: 'http://127.0.0.1:'+ port +'/upload?projectpath=%2FUsers%2Fusername%2Fdemo&version=v1.0.0&desc=test',
+        qa: {
+            projectpath: `/projects/${job_name}/output`,
+            version,
+            desc,
+        }
+    }
+    const result = await rp(options);
+    console.log(result)
     res.json({
         code: -1,
         message: '错误'
     });
+
 })
 
 app.listen(8000, () => console.log('app listening on port 8000!'))
