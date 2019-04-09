@@ -80,7 +80,10 @@ app.get('/free', async (req, res) => {
     clearTimeout(timer);
     status = IS_FREE;
     user = null;
-    res.sendStatus(200);
+    res.json({
+        code: 0,
+        message: '上传容器释放成功，其他用户可正常使用！'
+    });
 })
 
 app.post('/upload', async (req, res) => {
@@ -90,24 +93,20 @@ app.post('/upload', async (req, res) => {
     const options = {
         method: 'GET',
         uri: `http://127.0.0.1:${port}/upload?projectpath=${`/projects/${job_name}/output`}&version=${version}&desc=${desc}`,
-        // qa: {
-        //     projectpath: `/projects/${job_name}/output`,
-        //     version,
-        //     desc,
-        // }
     }
+    let code = 0;
+    let message = '上传成功，请到小程序管理后台进行体验版设置！';
     try {
-        const result = await rp(options);
-        console.log(result)
+        await rp(options);
     } catch (error) {
-        console.log(error)
-        console.log(typeof error)
-        console.log(error.message)
+        const err = JSON.parse(error.error);
+        code = err.code;
+        message = err.error;
     }
 
     res.json({
-        code: -1,
-        message: '错误'
+        code,
+        message,
     });
 
 })
