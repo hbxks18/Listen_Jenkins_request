@@ -96,8 +96,15 @@ app.post('/upload', async (req, res) => {
             desc,
         }
     }
-    const result = await rp(options);
-    console.log(result)
+    try {
+        const result = await rp(options);
+        console.log(result)
+    } catch (error) {
+        console.log(error)
+        console.log(typeof error)
+        console.log(error.message)
+    }
+
     res.json({
         code: -1,
         message: '错误'
