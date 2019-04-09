@@ -8,7 +8,7 @@ const app = express();
 
 
 app.use(cookieParser());
-// app.use(bodyParser.json());
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 
@@ -84,7 +84,7 @@ app.get('/free', async (req, res) => {
 
 app.post('/upload', async (req, res) => {
     const { version } = req.body;
-    console.log(version)
+    console.log(req)
     console.log(req.body, req.query)
     res.json({
         code: -1,
