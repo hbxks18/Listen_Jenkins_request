@@ -5,6 +5,7 @@ const bodyParser = require('body-parser')
 const cookieParser = require("cookie-parser");
 const exec = require('child_process').exec;
 const rp = require('request-promise');
+const { createCanvas } = require('canvas')
 const app = express();
 
 
@@ -46,7 +47,16 @@ const getLoginImage = async (res) => {
 }
 
 const getBusyImage = (res) => {
-    fs.createReadStream('./image/busy.jpg').pipe(res);
+    const canvas = createCanvas(250, 250);
+    const ctx = canvas.getContext('2d');
+    ctx.fillText('Hellow', 84, 24, 204)
+    // fs.createReadStream('./image/busy.jpg').pipe(res);
+    // const out = fs.createReadStream('./image/busy.jpeg');
+    const stream = canvas.createPNGStream();
+    res.type("png");
+    stream.pipe(res)
+    // out.on('finish', () =>  console.log('The JPEG file was created.'))
+
 }
 
 const timeout = (s) => {

@@ -19,6 +19,7 @@
   "homepage": "https://github.com/hbxks18/Listen_Jenkins_request#readme",
   "dependencies": {
     "body-parser": "^1.18.3",
+    "canvas": "^2.4.1",
     "cookie-parser": "^1.4.4",
     "express": "^4.16.4",
     "request": "^2.88.0",
