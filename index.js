@@ -54,11 +54,11 @@ const getUserName = async () => {
         uri: `http://uuap.sftcwl.com/wmpass/checklogin?SFTCUUAP=${user}&platform=jenkins`,
     };
     const result = await rp(options);
-    console.log(result)
-    if (+result.errno !== 0) {
+    const resultJson = JSON.parse(result);
+    if (+resultJson.errno !== 0) {
         return '用户不存在'
     }
-    return result.data.name;
+    return resultJson.data.name;
 }
 
 const getLoginImage = async (res) => {
