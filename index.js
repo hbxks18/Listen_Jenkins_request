@@ -32,31 +32,107 @@ const execPr = (cmdStr) => new Promise((resolve, reject) => {
     })
 });
 
+const generateImageStream = (opt) => {
+    const { width = 250, height = 250, bg = 'white', data = [] } = opt;
+    const canvas = createCanvas(width, height);
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, width, height);
+
+    data.forEach((item) => {
+        const { text, x, y, color = 'black', font = '16px "Microsoft YaHei"' } = item;
+        ctx.fillStyle = color;
+        ctx.font = font;
+        ctx.fillText(text, x, y);
+    });
+    return canvas.createPNGStream();
+}
+
+const getUserName = async () => {
+    const params = {
+        SFTCUUAP: user,
+        platform: jenkins,
+    };
+    const options = {
+        method: 'GET',
+        uri: `http://uuap.sftcwl.com/wmpass/checklogin?SFTCUUAP=${user}&platform=${jenkins}`,
+    };
+    const result = await rp(options);
+    if (+result.errno !== 0) {
+        return '用户不存在'
+    }
+    return result.data.name;
+}
+
 const getLoginImage = async (res) => {
     const cmd = 'cat "/root/.config/wechat_web_devtools/Default/.ide"';
     const port = await execPr(cmd);
     const options = {
         method: 'GET',
         uri: `http://127.0.0.1:${port}/login?format=image`,
+        timeout: 10000,
     };
     request(options)
     .on('error', (err) => {
-        console.log('【登录二维码获取失败】', err)
+        console.log('【登录二维码获取失败】', err);
+        const stream = generateImageStream({
+            data: [
+                {
+                    text: '【登录二维码获取失败】',
+                    x: 10,
+                    y: 50,
+                    color: 'red',
+                    font: '24px "Microsoft YaHei"',
+                },
+                {
+                    text: '请联系管理员处理',
+                    x: 25,
+                    y: 130,
+                    color: 'red',
+                },
+            ]
+        });
+        res.type("png");
+        stream.pipe(res);
     })
     .pipe(res);
 }
 
-const getBusyImage = (res) => {
-    const canvas = createCanvas(250, 250);
-    const ctx = canvas.getContext('2d');
-    ctx.fillText('Hellow', 84, 24, 204)
-    // fs.createReadStream('./image/busy.jpg').pipe(res);
-    // const out = fs.createReadStream('./image/busy.jpeg');
-    const stream = canvas.createPNGStream();
+const getBusyImage = async (res) => {
+    const name = await getUserName();
+    const data = [
+        {
+            text: '当前容器正在使用中！',
+            x: 10,
+            y: 50,
+            color: 'red',
+            font: '24px "Microsoft YaHei"',
+        },
+        {
+            text: `操作用户：${name}`,
+            x: 25,
+            y: 90,
+            color: 'red',
+            font: '22px "Microsoft YaHei"',
+        },
+        {
+            text: '(稍等几分钟后刷新本页重试',
+            x: 25,
+            y: 130,
+            color: 'red',
+        },
+        {
+            text: '或联系当前操作用户)',
+            x: 25,
+            y: 150,
+            color: 'red',
+        },
+    ];
+    const stream = generateImageStream({
+        data,
+    });
     res.type("png");
-    stream.pipe(res)
-    // out.on('finish', () =>  console.log('The JPEG file was created.'))
-
+    stream.pipe(res);
 }
 
 const timeout = (s) => {
@@ -67,7 +143,7 @@ const timeout = (s) => {
 }
 
 app.get('/login', async (req, res) => {
-    const curUser = req.cookies.STOKEN;
+    const curUser = req.cookies.SFTCUUAP;
     if (user && curUser === user) {
         getLoginImage(res);
         return;
