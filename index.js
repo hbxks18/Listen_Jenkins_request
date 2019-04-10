@@ -51,7 +51,7 @@ const generateImageStream = (opt) => {
 const getUserName = async () => {
     const params = {
         SFTCUUAP: user,
-        platform: jenkins,
+        platform: 'jenkins',
     };
     const options = {
         method: 'GET',
