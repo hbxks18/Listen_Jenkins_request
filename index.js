@@ -54,6 +54,7 @@ const getUserName = async () => {
         uri: `http://uuap.sftcwl.com/wmpass/checklogin?SFTCUUAP=${user}&platform=jenkins`,
     };
     const result = await rp(options);
+    console.log(result)
     if (+result.errno !== 0) {
         return '用户不存在'
     }
