@@ -17,8 +17,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 const IS_BUSY = 1; // 有项目正在使用该容器
 const IS_FREE = 0; // 该项目无人使用中
-const TIME_OUT = 300; // 超时时间，登录未使用，默认为5分钟后释放
-let timer = null;
+// const TIME_OUT = 300; // 超时时间，登录未使用，默认为5分钟后释放
+// let timer = null;
 let user = null;
 let status = IS_FREE;
 const execPr = (cmdStr) => new Promise((resolve, reject) => {
@@ -158,7 +158,7 @@ app.get('/login', async (req, res) => {
         case IS_FREE:
             status = IS_BUSY;
             user = curUser;
-            timeout(TIME_OUT);
+            // timeout(TIME_OUT); 防止扫码登录之后，超过五分钟没有操作，他人登录后，又进行发布，导致串号
             getLoginImage(res);
         break;
         default:break;
@@ -166,7 +166,7 @@ app.get('/login', async (req, res) => {
 })
 
 app.get('/free', async (req, res) => {
-    clearTimeout(timer);
+    // clearTimeout(timer);
     status = IS_FREE;
     user = null;
     res.json({
