@@ -74,16 +74,22 @@ const getLoginImage = async (res) => {
         const stream = generateImageStream({
             data: [
                 {
-                    text: '【登录二维码获取失败】',
-                    x: 10,
+                    text: '登录二维码获取失败',
+                    x: 0,
                     y: 50,
                     color: 'red',
                     font: '24px "Microsoft YaHei"',
                 },
                 {
-                    text: '请联系管理员处理',
-                    x: 25,
+                    text: '请刷新本页面重试',
+                    x: 0,
                     y: 130,
+                    color: 'red',
+                },
+                {
+                    text: '或联系管理员处理',
+                    x: 0,
+                    y: 150,
                     color: 'red',
                 },
             ]
@@ -99,27 +105,27 @@ const getBusyImage = async (res) => {
     const data = [
         {
             text: '当前容器正在使用中！',
-            x: 10,
+            x: 0,
             y: 50,
             color: 'red',
             font: '24px "Microsoft YaHei"',
         },
         {
             text: `操作用户：${name}`,
-            x: 25,
+            x: 0,
             y: 90,
             color: 'red',
             font: '22px "Microsoft YaHei"',
         },
         {
             text: '(稍等几分钟后刷新本页重试',
-            x: 25,
+            x: 0,
             y: 130,
             color: 'red',
         },
         {
             text: '或联系当前操作用户)',
-            x: 25,
+            x: 0,
             y: 150,
             color: 'red',
         },
