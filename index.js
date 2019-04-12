@@ -145,7 +145,7 @@ const timeout = (s) => {
     }, 1000 * s);
 }
 
-app.get('/login', async (req, res) => {
+app.get('/weixin/login', async (req, res) => {
     const curUser = req.cookies.SFTCUUAP;
     if (user && curUser === user) {
         getLoginImage(res);
@@ -165,7 +165,7 @@ app.get('/login', async (req, res) => {
     }
 })
 
-app.get('/free', async (req, res) => {
+app.get('/weixin/free', async (req, res) => {
     // clearTimeout(timer);
     status = IS_FREE;
     user = null;
@@ -175,7 +175,7 @@ app.get('/free', async (req, res) => {
     });
 })
 
-app.post('/upload', async (req, res) => {
+app.post('/weixin/upload', async (req, res) => {
     const { version, job_name, desc } = req.body;
     const cmd = 'cat "/root/.config/wechat_web_devtools/Default/.ide"';
     const port = await execPr(cmd);
