@@ -51,7 +51,7 @@ const generateImageStream = (opt) => {
 const getUserName = async () => {
     const options = {
         method: 'GET',
-        uri: `http://uuap.sftcwl.com/wmpass/checklogin?SFTCUUAP=${user}&platform=jenkins`,
+        uri: `http:/***/checklogin?SFTCUUAP=${user}&platform=jenkins`,
     };
     const result = await rp(options);
     const resultJson = JSON.parse(result);
