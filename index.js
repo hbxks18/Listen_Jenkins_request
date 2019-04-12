@@ -188,9 +188,12 @@ app.post('/weixin/upload', async (req, res) => {
     try {
         await rp(options);
     } catch (error) {
-        const err = JSON.parse(error.error);
-        code = err.code;
-        message = err.error;
+        console.log(error)
+        if (error.error && typeof error.error === 'string') {
+            const err = JSON.parse(error.error);
+            code = err.code;
+            message = err.error;
+        }
     }
 
     res.json({
