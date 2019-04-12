@@ -181,12 +181,13 @@ app.post('/weixin/upload', async (req, res) => {
     const port = await execPr(cmd);
     const options = {
         method: 'GET',
-        uri: `http://127.0.0.1:${port}/upload?projectpath=%2Froot%2Fjenkins%2Fworkspace%2Fprod_fe__leshou-wx%2Foutput&version=${version}&desc=${desc}`,
+        uri: `http://127.0.0.1:${port}/upload?projectpath=/root/jenkins/workspace/prod_fe__leshou-wx/output&version=${version}&desc=${desc}`,
     }
     let code = 0;
     let message = '上传成功，请到小程序管理后台进行体验版设置！';
     try {
-        await rp(options);
+        // await rp(options);
+        await execPr(`cli -u ${version}@/root/jenkins/workspace/prod_fe__leshou-wx/output --upload-desc '${desc}'`)
     } catch (error) {
         console.log(error)
         if (error.error && typeof error.error === 'string') {
