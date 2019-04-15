@@ -51,7 +51,7 @@ const generateImageStream = (opt) => {
 const getUserName = async () => {
     const options = {
         method: 'GET',
-        uri: `http:/***/checklogin?SFTCUUAP=${user}&platform=jenkins`,
+        uri: `http://***/checklogin?SFTCUUAP=${user}&platform=jenkins`,
     };
     const result = await rp(options);
     const resultJson = JSON.parse(result);
@@ -181,20 +181,23 @@ app.post('/weixin/upload', async (req, res) => {
     const port = await execPr(cmd);
     const options = {
         method: 'GET',
-        uri: `http://127.0.0.1:${port}/upload?projectpath=%2root%2jenkins%2workspace%2prod_fe__leshou-wx%2output&version=${version}&desc=${desc}`,
+        uri: `http://127.0.0.1:${port}/upload?projectpath=/projects/output&version=${version}&desc=${desc}`,
     }
     let code = 0;
     let message = '上传成功，请到小程序管理后台进行体验版设置！';
     try {
-        // await rp(options);
-        await execPr(`cli -u ${version}@/root/jenkins/workspace/prod_fe__leshou-wx/output --upload-desc '${desc}'`)
+        await rp(options);
     } catch (error) {
-        console.log(error)
-        if (error.error && typeof error.error === 'string') {
-            const err = JSON.parse(error.error);
-            code = err.code;
-            message = err.error;
+        let err = {};
+        try {
+            err = JSON.parse(error.error);
+        } catch (e) {
+            err.code = -1;
+            err.error = error;
         }
+
+        code = err.code;
+        message = err.error;
     }
 
     res.json({
