@@ -181,7 +181,7 @@ app.post('/weixin/upload', async (req, res) => {
     const port = await execPr(cmd);
     const options = {
         method: 'GET',
-        uri: `http://127.0.0.1:${port}/upload?version=${version}&desc=${desc}&projectpath=/projects/output`,
+        uri: `http://127.0.0.1:${port}/upload?version=${version}&desc=${desc}&projectpath=/projects`,
     }
     let code = 0;
     let message = '上传成功，请到小程序管理后台进行体验版设置！';
