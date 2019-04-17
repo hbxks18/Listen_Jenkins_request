@@ -145,6 +145,14 @@ const timeout = (s) => {
     }, 1000 * s);
 }
 
+const freeContainer = () => {
+    status = IS_FREE;
+    user = null;
+    // 清空目录
+    const cmd = 'rm -fr "/projects/*"';
+    await execPr(cmd);
+}
+
 app.get('/weixin/login', async (req, res) => {
     const curUser = req.cookies.SFTCUUAP;
     if (user && curUser === user) {
@@ -165,15 +173,6 @@ app.get('/weixin/login', async (req, res) => {
     }
 })
 
-app.get('/weixin/free', async (req, res) => {
-    // clearTimeout(timer);
-    status = IS_FREE;
-    user = null;
-    res.json({
-        code: 0,
-        message: '上传容器释放成功，其他用户可正常使用！'
-    });
-})
 
 app.post('/weixin/upload', async (req, res) => {
     const { version, job_name, desc } = req.body;
@@ -199,6 +198,8 @@ app.post('/weixin/upload', async (req, res) => {
         code = err.code;
         message = err.error;
     }
+    // 不管成功失败都会释放容器和删除output
+    freeContainer();
 
     res.json({
         code,
