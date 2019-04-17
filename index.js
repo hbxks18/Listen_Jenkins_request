@@ -145,7 +145,7 @@ const timeout = (s) => {
     }, 1000 * s);
 }
 
-const freeContainer = () => {
+const freeContainer = async () => {
     status = IS_FREE;
     user = null;
     // 清空目录
@@ -199,7 +199,7 @@ app.post('/weixin/upload', async (req, res) => {
         message = err.error;
     }
     // 不管成功失败都会释放容器和删除output
-    freeContainer();
+    await freeContainer();
 
     res.json({
         code,
