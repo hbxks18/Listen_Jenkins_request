@@ -1,9 +1,10 @@
 const express = require('express');
-const fs = require('fs');
 const request = require('request');
 const bodyParser = require('body-parser')
 const cookieParser = require("cookie-parser");
-const exec = require('child_process').exec;
+// const exec = require('child_process').exec;
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
 const rp = require('request-promise');
 const { createCanvas } = require('canvas')
 const app = express();
@@ -15,22 +16,12 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 
 
-const IS_BUSY = 1; // 有项目正在使用该容器
-const IS_FREE = 0; // 该项目无人使用中
-// const TIME_OUT = 300; // 超时时间，登录未使用，默认为5分钟后释放
-// let timer = null;
-let user = null;
-let status = IS_FREE;
-const execPr = (cmdStr) => new Promise((resolve, reject) => {
-    exec(cmdStr, (err, stdout) => {
-        if (err) {
-            console.log(`【exec 执行错误】`, err)
-            reject(err);
-        } else {
-            resolve(stdout);
-        }
-    })
-});
+const IS_BUSY = 1; // 容器正在使用中
+const IS_FREE = 0; // 容器无人使用
+
+let user = null; // 使用者
+let status = IS_FREE; // 容器状态
+
 
 const generateImageStream = (opt) => {
     const { width = 250, height = 250, bg = 'white', data = [] } = opt;
@@ -48,6 +39,14 @@ const generateImageStream = (opt) => {
     return canvas.createPNGStream();
 }
 
+const getImageByDate = async (res, data) => {
+    const stream = generateImageStream({
+        data,
+    });
+    res.type("png");
+    stream.pipe(res);
+}
+
 const getUserName = async () => {
     const options = {
         method: 'GET',
@@ -63,7 +62,7 @@ const getUserName = async () => {
 
 const getLoginImage = async (res) => {
     const cmd = 'cat "/root/.config/wechat_web_devtools/Default/.ide"';
-    const port = await execPr(cmd);
+    const { stdout: port, stderr } = await exec(cmd);
     const options = {
         method: 'GET',
         uri: `http://127.0.0.1:${port}/login?format=image`,
@@ -72,31 +71,27 @@ const getLoginImage = async (res) => {
     request(options)
     .on('error', (err) => {
         console.log('【登录二维码获取失败】', err);
-        const stream = generateImageStream({
-            data: [
-                {
-                    text: '登录二维码获取失败',
-                    x: 0,
-                    y: 50,
-                    color: 'red',
-                    font: '24px "Microsoft YaHei"',
-                },
-                {
-                    text: '请刷新本页面重试',
-                    x: 0,
-                    y: 130,
-                    color: 'red',
-                },
-                {
-                    text: '或联系管理员处理',
-                    x: 0,
-                    y: 150,
-                    color: 'red',
-                },
-            ]
-        });
-        res.type("png");
-        stream.pipe(res);
+        getImageByDate(res, [
+            {
+                text: '登录二维码获取失败',
+                x: 0,
+                y: 50,
+                color: 'red',
+                font: '24px "Microsoft YaHei"',
+            },
+            {
+                text: '请刷新本页面重试',
+                x: 0,
+                y: 130,
+                color: 'red',
+            },
+            {
+                text: '或联系管理员处理',
+                x: 0,
+                y: 150,
+                color: 'red',
+            },
+        ]);
     })
     .pipe(res);
 }
@@ -131,26 +126,17 @@ const getBusyImage = async (res) => {
             color: 'red',
         },
     ];
-    const stream = generateImageStream({
-        data,
-    });
-    res.type("png");
-    stream.pipe(res);
+    getImageByDate(res, data);
 }
 
-const timeout = (s) => {
-    timer = setTimeout(() => {
-        status = IS_FREE;
-        user = null;
-    }, 1000 * s);
-}
+
 
 const freeContainer = async () => {
     status = IS_FREE;
     user = null;
     // 清空目录
     const cmd = 'rm -fr "/projects/*"';
-    await execPr(cmd);
+    const { stdout, stderr } = await exec(cmd);
 }
 
 app.get('/weixin/login', async (req, res) => {
@@ -166,18 +152,48 @@ app.get('/weixin/login', async (req, res) => {
         case IS_FREE:
             status = IS_BUSY;
             user = curUser;
-            // timeout(TIME_OUT); 防止扫码登录之后，超过五分钟没有操作，他人登录后，又进行发布，导致串号
             getLoginImage(res);
         break;
         default:break;
     }
 })
 
+app.get('/weixin/free', async (req, res) => {
+    const curUser = req.cookies.SFTCUUAP;
+    const { check } = req.query;
+    if (check) { // 构建页面的手动释放按钮，需校验身份为创建者才释放
+        if (curUser === user) {
+            await freeContainer();
+            getImageByDate(res, [{
+                text: '释放容器成功，其他用户刷新后可正常使用！',
+                x: 0,
+                y: 50,
+                color: 'red',
+                font: '24px "Microsoft YaHei"',
+            },]);
+        } else {
+            getImageByDate(res, [{
+                text: '当前容器不是您创建，只能有当前操作人释放，请联系当前操作人释放。',
+                x: 0,
+                y: 50,
+                color: 'red',
+                font: '24px "Microsoft YaHei"',
+            },]);
+        }
+    } else {
+        await freeContainer();
+        res.json({
+            code: 0,
+            message: '上传容器释放成功，其他用户可正常使用！'
+        });
+    }
+
+})
 
 app.post('/weixin/upload', async (req, res) => {
-    const { version, job_name, desc } = req.body;
+    const { version, desc } = req.body;
     const cmd = 'cat "/root/.config/wechat_web_devtools/Default/.ide"';
-    const port = await execPr(cmd);
+    const { stdout: port, stderr } = await exec(cmd);
     const options = {
         method: 'GET',
         uri: `http://127.0.0.1:${port}/upload?version=${version}&desc=${desc}&projectpath=/projects/output`,
