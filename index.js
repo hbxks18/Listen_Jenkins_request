@@ -137,10 +137,8 @@ const freeContainer = async () => {
     status = IS_FREE;
     user = null;
     // 清空目录
-    const cmd = 'rm -fr "/projects/*"';
+    const cmd = `rm -fr /projects/*`;
     const { stdout, stderr } = await exec(cmd);
-    console.log(`【freeContainer】stdout：${stdout}`)
-    console.log(`【freeContainer】stderr：${stderr}`)
 }
 
 app.get('/weixin/login', async (req, res) => {
