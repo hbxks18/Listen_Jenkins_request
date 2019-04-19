@@ -39,10 +39,8 @@ const generateImageStream = (opt) => {
     return canvas.createPNGStream();
 }
 
-const getImageByDate = async (res, data) => {
-    const stream = generateImageStream({
-        data,
-    });
+const getImageByDate = async (res, opt) => {
+    const stream = generateImageStream(opt);
     res.type("png");
     stream.pipe(res);
 }
@@ -71,27 +69,29 @@ const getLoginImage = async (res) => {
     request(options)
     .on('error', (err) => {
         console.log('【登录二维码获取失败】', err);
-        getImageByDate(res, [
-            {
-                text: '登录二维码获取失败',
-                x: 0,
-                y: 50,
-                color: 'red',
-                font: '24px "Microsoft YaHei"',
-            },
-            {
-                text: '请刷新本页面重试',
-                x: 0,
-                y: 130,
-                color: 'red',
-            },
-            {
-                text: '或联系管理员处理',
-                x: 0,
-                y: 150,
-                color: 'red',
-            },
-        ]);
+        getImageByDate(res, {
+            data: [
+                {
+                    text: '登录二维码获取失败',
+                    x: 0,
+                    y: 50,
+                    color: 'red',
+                    font: '24px "Microsoft YaHei"',
+                },
+                {
+                    text: '请刷新本页面重试',
+                    x: 0,
+                    y: 130,
+                    color: 'red',
+                },
+                {
+                    text: '或联系管理员处理',
+                    x: 0,
+                    y: 150,
+                    color: 'red',
+                },
+            ]
+        });
     })
     .pipe(res);
 }
@@ -126,7 +126,9 @@ const getBusyImage = async (res) => {
             color: 'red',
         },
     ];
-    getImageByDate(res, data);
+    getImageByDate(res, {
+        data,
+    });
 }
 
 
@@ -137,6 +139,8 @@ const freeContainer = async () => {
     // 清空目录
     const cmd = 'rm -fr "/projects/*"';
     const { stdout, stderr } = await exec(cmd);
+    console.log(`【freeContainer】stdout：${stdout}`)
+    console.log(`【freeContainer】stderr：${stderr}`)
 }
 
 app.get('/weixin/login', async (req, res) => {
@@ -164,21 +168,29 @@ app.get('/weixin/free', async (req, res) => {
     if (check) { // 构建页面的手动释放按钮，需校验身份为创建者才释放
         if (curUser === user) {
             await freeContainer();
-            getImageByDate(res, [{
-                text: '释放容器成功，其他用户刷新后可正常使用！',
-                x: 0,
-                y: 50,
-                color: 'red',
-                font: '24px "Microsoft YaHei"',
-            },]);
+            getImageByDate(res, {
+                width: 500,
+                height: 100,
+                data: [{
+                    text: '释放容器成功，其他用户刷新后可正常使用！',
+                    x: 0,
+                    y: 50,
+                    color: 'red',
+                    font: '24px "Microsoft YaHei"',
+                }]
+            })
         } else {
-            getImageByDate(res, [{
-                text: '当前容器不是您创建，只能有当前操作人释放，请联系当前操作人释放。',
-                x: 0,
-                y: 50,
-                color: 'red',
-                font: '24px "Microsoft YaHei"',
-            },]);
+            getImageByDate(res, {
+                width: 500,
+                height: 100,
+                data: [{
+                    text: '当前容器不是您创建，只能有当前操作人释放，请联系当前操作人释放。',
+                    x: 0,
+                    y: 50,
+                    color: 'red',
+                    font: '24px "Microsoft YaHei"',
+                }]
+            });
         }
     } else {
         await freeContainer();
