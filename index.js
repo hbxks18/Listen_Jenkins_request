@@ -218,7 +218,7 @@ app.get('/weixin/free', async (req, res) => {
 })
 
 app.post('/weixin/upload', async (req, res) => {
-    const { version, desc } = req.body;
+    const { version, desc, isTest = 0 } = req.body;
     const cmd = 'cat "/root/.config/wechat_web_devtools/Default/.ide"';
     const { stdout: port, stderr } = await exec(cmd);
     const options = {
@@ -247,9 +247,10 @@ app.post('/weixin/upload', async (req, res) => {
         code = err.code;
         message = err.error;
     }
-    // 不管成功失败都会释放容器和删除output
-    await freeContainer();
-
+    // 不管成功失败都会释放容器和删除output, 增加isFree用于调试时
+    if (!+isTest) {
+        await freeContainer();
+    }
     res.json({
         code,
         message,
