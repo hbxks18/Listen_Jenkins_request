@@ -154,8 +154,8 @@ const freeContainer = async () => {
     status = IS_FREE;
     user = null;
     // 清空目录
-    const cmd = `rm -fr /projects/*`;
-    const { stdout, stderr } = await exec(cmd);
+    // const cmd = `rm -fr /projects/*`;
+    // const { stdout, stderr } = await exec(cmd);
 }
 
 app.get('/weixin/login', async (req, res) => {
@@ -218,7 +218,7 @@ app.get('/weixin/free', async (req, res) => {
 })
 
 app.post('/weixin/upload', async (req, res) => {
-    const { version, desc, isTest = 0 } = req.body;
+    const { version, desc } = req.body;
     const cmd = 'cat "/root/.config/wechat_web_devtools/Default/.ide"';
     const { stdout: port, stderr } = await exec(cmd);
     const options = {
@@ -247,15 +247,12 @@ app.post('/weixin/upload', async (req, res) => {
         code = err.code;
         message = err.error;
     }
-    // 不管成功失败都会释放容器和删除output, 增加isFree用于调试时
-    if (!+isTest) {
-        await freeContainer();
-    }
+    // 不管成功失败都会释放容器
+    await freeContainer();
     res.json({
         code,
         message,
     });
-
-})
+});
 
 app.listen(8000, () => console.log('app listening on port 8000!'))
