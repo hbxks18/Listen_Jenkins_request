@@ -4,11 +4,21 @@ const bodyParser = require('body-parser')
 const cookieParser = require("cookie-parser");
 // const exec = require('child_process').exec;
 const util = require('util');
+const log4js = require('log4js');
 const exec = util.promisify(require('child_process').exec);
 const rp = require('request-promise');
 const { createCanvas } = require('canvas')
 const app = express();
 
+const logger = log4js.getLogger();
+logger.level = 'trace';
+
+// logger.trace('Entering cheese testing');
+// logger.debug('Got cheese.');
+// logger.info('Cheese is Comté.');
+// logger.warn('Cheese is quite smelly.');
+// logger.error('Cheese is too ripe!');
+// logger.fatal('Cheese was breeding ground for listeria.');
 
 app.use(cookieParser());
 app.use(bodyParser.json());
@@ -49,13 +59,19 @@ const getUserName = async () => {
     const options = {
         method: 'GET',
         uri: `http://***/checklogin?SFTCUUAP=${user}&platform=jenkins`,
+        json: true, // opt 自动转换为json
     };
-    const result = await rp(options);
-    const resultJson = JSON.parse(result);
-    if (+resultJson.errno !== 0) {
+    let result;
+    try {
+        result = await rp(options);
+    } catch (error) {
+        logger.fatal('【获取UUAP用户信息错误】', error);
+    }
+    // const resultJson = JSON.parse(result);
+    if (+result.errno !== 0) {
         return '用户不存在'
     }
-    return resultJson.data.name;
+    return result.data.name;
 }
 
 const getLoginImage = async (res) => {
@@ -68,7 +84,7 @@ const getLoginImage = async (res) => {
     };
     request(options)
     .on('error', (err) => {
-        console.log('【登录二维码获取失败】', err);
+        logger.fatal('【登录二维码获取错误】', err);
         getImageByDate(res, {
             data: [
                 {
@@ -134,6 +150,7 @@ const getBusyImage = async (res) => {
 
 
 const freeContainer = async () => {
+    logger.info('【释放容器】');
     status = IS_FREE;
     user = null;
     // 清空目录
@@ -206,13 +223,19 @@ app.post('/weixin/upload', async (req, res) => {
     const { stdout: port, stderr } = await exec(cmd);
     const options = {
         method: 'GET',
-        uri: `http://127.0.0.1:${port}/upload?version=${version}&desc=${desc}&projectpath=/projects/output`,
+        uri: `http://127.0.0.1:${port}/upload`,
+        qs: { // fix uri中如果有中文字符rp会报错
+            version,
+            desc,
+            projectpath: '/projects/output'
+        },
     }
     let code = 0;
     let message = '上传成功，请到小程序管理后台进行体验版设置！';
     try {
         await rp(options);
     } catch (error) {
+        logger.fatal('【上传小程序错误】', error);
         let err = {};
         try {
             err = JSON.parse(error.error);
