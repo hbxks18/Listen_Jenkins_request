@@ -158,6 +158,12 @@ const freeContainer = async () => {
     // const { stdout, stderr } = await exec(cmd);
 }
 
+const delOutput = async () => {
+    // 清空目录
+    const cmd = `rm -fr /projects/*`;
+    const { stdout, stderr } = await exec(cmd);
+}
+
 app.get('/weixin/login', async (req, res) => {
     const curUser = req.cookies.SFTCUUAP;
     if (user && curUser === user) {
@@ -214,8 +220,23 @@ app.get('/weixin/free', async (req, res) => {
             message: '上传容器释放成功，其他用户可正常使用！'
         });
     }
-
 })
+
+app.get('/weixin/del', async (req, res) => {
+    let code = 0;
+    let message = '删除output目录成功';
+    try {
+        await delOutput();
+    } catch (error) {
+        logger.fatal('【删除output目录错误】', error);
+        code = -1;
+        message = error;
+    }
+    res.json({
+        code,
+        message,
+    });
+});
 
 app.post('/weixin/upload', async (req, res) => {
     const { version, desc } = req.body;
