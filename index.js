@@ -31,7 +31,14 @@ const IS_FREE = 0; // 容器无人使用
 
 let user = null; // 使用者
 let status = IS_FREE; // 容器状态
+let timer = null;
 
+const setTimer = () => {
+    timer && clearTimeout(timer);
+    timer = setTimeout(() => {
+        freeContainer();
+    }, 1000 * 60 * 30);
+}
 
 const generateImageStream = (opt) => {
     const { width = 250, height = 250, bg = 'white', data = [] } = opt;
@@ -82,6 +89,7 @@ const getLoginImage = async (res) => {
         uri: `http://127.0.0.1:${port}/login?format=image`,
         timeout: 10000,
     };
+    setTimer();
     request(options)
     .on('error', (err) => {
         logger.fatal('【登录二维码获取错误】', err);
@@ -275,5 +283,22 @@ app.post('/weixin/upload', async (req, res) => {
         message,
     });
 });
+
+app.get('weixin/check', async (req, res) => {
+    let code = 0;
+    let message = '开始构建';
+    switch (status) {
+        case IS_BUSY:
+            code = -1;
+            message = '构建失败，当前容器已被其他用户使用！'
+            break;
+        case IS_FREE:break;
+        default:break;
+    }
+    res.json({
+        code,
+        message,
+    });
+})
 
 app.listen(8000, () => console.log('app listening on port 8000!'))
