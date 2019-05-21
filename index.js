@@ -284,7 +284,7 @@ app.post('/weixin/upload', async (req, res) => {
     });
 });
 
-app.get('weixin/check', async (req, res) => {
+app.get('/weixin/check', async (req, res) => {
     let code = 0;
     let message = '开始构建';
     switch (status) {
